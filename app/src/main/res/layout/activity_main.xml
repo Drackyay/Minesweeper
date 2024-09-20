@@ -75,11 +75,8 @@
 
     <androidx.gridlayout.widget.GridLayout
         android:id="@+id/gridLayout"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
+        android:layout_width="320dp"
+        android:layout_height="386dp"
         android:layout_marginBottom="90sp"
         android:layout_gravity="center"
         app:layout_constraintTop_toBottomOf="@id/toolbar"

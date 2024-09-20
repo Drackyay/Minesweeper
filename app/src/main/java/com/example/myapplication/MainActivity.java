@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
             actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setCustomView(R.layout.custom_bar);
         }
-
         GridLayout gridLayout = findViewById(R.id.gridLayout);
         gridLayout.setRowCount(12);
         gridLayout.setColumnCount(10);
