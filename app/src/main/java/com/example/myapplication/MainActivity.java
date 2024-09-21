@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -34,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
     private HashMap<Cell, String> cellStates = new HashMap<>();
     private ToggleButton toggleButton;
     private Set<Cell> mines = new HashSet<>();
-    private int mineCount = 4;
-    private TextView mineCountView;
+    private int flagCount = 4;
+    private TextView flagCountView;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,7 +45,6 @@ public class MainActivity extends AppCompatActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayShowCustomEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
             actionBar.setCustomView(R.layout.custom_bar);
         }
 
@@ -77,31 +77,31 @@ public class MainActivity extends AppCompatActivity {
         }
         // Implement 4 mines
         Random random = new Random();
-        while (mines.size() < 4) {
+        while(mines.size() < 4){
             int x = random.nextInt(12);
             int y = random.nextInt(10);
             mines.add(new Cell(x, y));
         }
-        mineCountView = findViewById(R.id.mine_count);
+        flagCountView = findViewById(R.id.mine_count);
     }
 
 
     private void handleCellClick (Cell cell, Button cellButton){
         String currentState = cellStates.get(cell);
-        if (toggleButton.isChecked()) {
-            if (currentState.equals("hidden")) {
+        if(toggleButton.isChecked()){
+            if(currentState.equals("hidden")){
                 cellStates.put(cell, "flagged");
                 cellButton.setText(R.string.flag);
-                mineCount -=1;
-                mineCountView.setText(String.valueOf(mineCount));
-            } else if (currentState.equals("flagged")) {
+                flagCount -=1;
+                flagCountView.setText(String.valueOf(flagCount));
+            }else if(currentState.equals("flagged")){
                 cellStates.put(cell, "hidden");
                 cellButton.setText("");
-                mineCount += 1;
-                mineCountView.setText(String.valueOf(mineCount));
+                flagCount += 1;
+                flagCountView.setText(String.valueOf(flagCount));
             }
-        } else {
-            if (currentState.equals("hidden") && !mines.contains(cell)){
+        }else{
+            if(currentState.equals("hidden") && !mines.contains(cell)){
                 cellStates.put(cell, "revealed");
                 int adjacentMines = adjacentMines(cell);
                 cellButton.setText(String.valueOf(adjacentMines));
@@ -117,17 +117,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void checkWinCondition() {
+        boolean win = true;
+        for(Cell cell : cellStates.keySet()){
+            String state = cellStates.get(cell);
+            if(!mines.contains(cell) && !state.equals("revealed")){
+                win = false;
+                break;
+            }
+        }
+        if(win && flagCount == 0 ){
+            Intent intent = new Intent(MainActivity.this, ResultPage.class);
+            intent.putExtra("Result", "You Win!");
+//            intent.putExtra("Time", timeTaken);
+            startActivity(intent);
+            finish();
+        }
     }
 
     private void revealAllMines() {
-//        for(Cell mine : mines){
-//            Button mineButton = findButtonByCell(mine);
-//            if (mineButton != null) {
-//                mineButton.setText(R.string.mine);
-//                mineButton.setBackgroundColor(Color.RED);
-//            }
-//        }
+        for(Cell mine : mines){
+            Button mineButton = findButtonByCell(mine);
+            if (mineButton != null) {
+                mineButton.setText(R.string.mine);
+                mineButton.setBackgroundColor(Color.RED);
+            }
+        }
         
+    }
+
+    private Button findButtonByCell(Cell mine) {
+
     }
 
     private void revealAdjacentCells(Cell cell) {
