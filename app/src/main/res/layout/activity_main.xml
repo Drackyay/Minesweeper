@@ -52,7 +52,7 @@
             android:textSize="32sp"
             android:textAlignment="center"
             android:gravity="center"
-            android:layout_marginLeft="30sp"
+            android:layout_marginLeft="10sp"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toRightOf="@id/mine_count">
@@ -61,8 +61,6 @@
             android:id="@+id/clock_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:height="64dp"
-            android:width="64dp"
             android:textAlignment="center"
             android:gravity="center"
             android:textSize="32sp"

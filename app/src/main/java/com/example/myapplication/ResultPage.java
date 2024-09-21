@@ -27,16 +27,16 @@ public class ResultPage extends AppCompatActivity {
         Intent intent = getIntent();
         String result = intent.getStringExtra("Result");
         String result2 = intent.getStringExtra("Result2");
-//        long timeTaken = intent.getLongExtra("TIME_TAKEN", 0);
+        int timeTaken = intent.getIntExtra("Time", 0);
 
         TextView resultTextView = findViewById(R.id.result);
-        //TextView timeTextView = findViewById(R.id.timeTextView);
+        TextView timeTextView = findViewById(R.id.time);
         resultTextView.setText(result);
         TextView result2TextView = findViewById(R.id.result2);
         result2TextView.setText(result2);
-        //timeTextView.setText("Time taken: " + timeTaken + " seconds");
+        timeTextView.setText("Time taken: " + timeTaken + " seconds");
 
-        // Set up the button to restart the game
+        //Restart the Game
         Button restartButton = findViewById(R.id.restartButton);
         restartButton.setOnClickListener(v -> {
             Intent restartIntent = new Intent(ResultPage.this, MainActivity.class);

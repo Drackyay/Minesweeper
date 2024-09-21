@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import androidx.gridlayout.widget.GridLayout;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private int clock = 0;
     private boolean running = true;
     private TextView clockTextView;
+    private boolean isTimerStarted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +57,7 @@ public class MainActivity extends AppCompatActivity {
         gridLayout.setRowCount(12);
         gridLayout.setColumnCount(10);
         toggleButton = findViewById(R.id.toggleButton);
+        clockTextView = findViewById(R.id.clock_count);
         for (int i = 0; i < 12; i++) {
             for (int j = 0; j < 10; j++) {
                 Button cellButton = new Button(this);
@@ -92,6 +95,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void handleCellClick (Cell cell, Button cellButton){
         String currentState = cellStates.get(cell);
+        if (!isTimerStarted) {
+            isTimerStarted = true;
+            running = true;
+            runTimer();
+        }
         if(toggleButton.isChecked()){
             if(currentState.equals("hidden")){
                 cellStates.put(cell, "flagged");
@@ -147,10 +155,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         if(win && flagCount == 0 ){
+            running = false;
+            int finalTime = clock;
             Intent intent = new Intent(MainActivity.this, ResultPage.class);
             intent.putExtra("Result", "You Win.");
             intent.putExtra("Result2", "Good job!");
-//            intent.putExtra("Time", timeTaken);
+            intent.putExtra("Time", finalTime);
             startActivity(intent);
             finish();
         }
@@ -164,13 +174,15 @@ public class MainActivity extends AppCompatActivity {
                 mineButton.setBackgroundColor(Color.RED);
             }
         }
+        running = false;
+        int finalTime = clock;
         new android.os.Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 Intent intent = new Intent(MainActivity.this, ResultPage.class);
                 intent.putExtra("Result", "You Lost.");
                 intent.putExtra("Result2","Try Again!");
-                intent.putExtra("Time", timeTaken);
+                intent.putExtra("Time", finalTime);
                 startActivity(intent);
                 finish();
             }
@@ -224,4 +236,21 @@ public class MainActivity extends AppCompatActivity {
         return Math.round(dp * density);
     }
 
+    private void runTimer() {
+        final Handler handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                int hours =clock/3600;
+                int minutes = (clock%3600) / 60;
+                int seconds = clock%60;
+                String time = String.format("%d:%02d:%02d", hours, minutes, seconds);
+                clockTextView.setText(time);
+                if (running) {
+                    clock++;
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
+    }
 }
