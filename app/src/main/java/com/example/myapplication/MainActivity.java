@@ -6,9 +6,6 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import androidx.gridlayout.widget.GridLayout;
 
@@ -28,6 +25,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+import java.util.Vector;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -37,6 +35,11 @@ public class MainActivity extends AppCompatActivity {
     private Set<Cell> mines = new HashSet<>();
     private int flagCount = 4;
     private TextView flagCountView;
+    private Vector<Cell> cellsToReveal = new Vector<>();
+    private int clock = 0;
+    private boolean running = true;
+    private TextView clockTextView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
                 cellButton.setLayoutParams(cellScale);
                 gridLayout.addView(cellButton);
                 Cell newCell = new Cell(i, j);
+                cellButton.setTag(newCell);
                 cellStates.put(newCell, "hidden");
                 cellButton.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -102,18 +106,35 @@ public class MainActivity extends AppCompatActivity {
             }
         }else{
             if(currentState.equals("hidden") && !mines.contains(cell)){
-                cellStates.put(cell, "revealed");
-                int adjacentMines = adjacentMines(cell);
-                cellButton.setText(String.valueOf(adjacentMines));
-                cellButton.setBackgroundColor(Color.LTGRAY);
-                if (adjacentMines == 0) {
-                    revealAdjacentCells(cell);
+                revealCell(cell);
+                if(adjacentMinesCount(cell)== 0){
+                    cellsToReveal.add(cell);
+                    revealEmptyCells();
                 }
             }else if(mines.contains(cell)){
                 revealAllMines();
             }
         }
         checkWinCondition();
+    }
+
+    private void revealEmptyCells() {
+        while (!cellsToReveal.isEmpty()) {
+            Cell cell = cellsToReveal.remove(0);
+            for (int i = -1; i <= 1; i++) {
+                for (int j = -1; j <= 1; j++) {
+                    if (i == 0 && j == 0) continue;
+                    int newRow = cell.getRow() + i;
+                    int newCol = cell.getColumn() + j;
+                    if (newRow >= 0 && newRow < 12 && newCol >= 0 && newCol < 10) {
+                        Cell adjacentCell = new Cell(newRow, newCol);
+                        if ("hidden".equals(cellStates.get(adjacentCell)) && !mines.contains(adjacentCell)) {
+                            revealCell(adjacentCell);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private void checkWinCondition() {
@@ -127,7 +148,8 @@ public class MainActivity extends AppCompatActivity {
         }
         if(win && flagCount == 0 ){
             Intent intent = new Intent(MainActivity.this, ResultPage.class);
-            intent.putExtra("Result", "You Win!");
+            intent.putExtra("Result", "You Win.");
+            intent.putExtra("Result2", "Good job!");
 //            intent.putExtra("Time", timeTaken);
             startActivity(intent);
             finish();
@@ -137,23 +159,53 @@ public class MainActivity extends AppCompatActivity {
     private void revealAllMines() {
         for(Cell mine : mines){
             Button mineButton = findButtonByCell(mine);
-            if (mineButton != null) {
+            if(mineButton != null){
                 mineButton.setText(R.string.mine);
                 mineButton.setBackgroundColor(Color.RED);
             }
         }
-        
+        new android.os.Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(MainActivity.this, ResultPage.class);
+                intent.putExtra("Result", "You Lost.");
+                intent.putExtra("Result2","Try Again!");
+                intent.putExtra("Time", timeTaken);
+                startActivity(intent);
+                finish();
+            }
+        }, 2000);
     }
 
-    private Button findButtonByCell(Cell mine) {
-
+    private Button findButtonByCell(Cell cell) {
+        GridLayout gridLayout = findViewById(R.id.gridLayout);
+        for(int i = 0; i < gridLayout.getChildCount(); i++){
+            Button button = (Button)gridLayout.getChildAt(i);
+            Cell taggedCell = (Cell)button.getTag();
+            if(taggedCell != null &&  taggedCell.equals(cell)) {
+                return button;
+            }
+        }
+        return null;
     }
 
-    private void revealAdjacentCells(Cell cell) {
-        
+
+    private void revealCell(Cell cell) {
+        Button cellButton = findButtonByCell(cell);
+        if (cellButton != null && "hidden".equals(cellStates.get(cell))) {
+            cellStates.put(cell, "revealed");
+            int adjacentMines = adjacentMinesCount(cell);
+            if (adjacentMines > 0) {
+                cellButton.setText(String.valueOf(adjacentMines));
+            } else {
+                cellButton.setText("");
+                cellsToReveal.add(cell);
+            }
+            cellButton.setBackgroundColor(Color.LTGRAY);
+        }
     }
 
-    private int adjacentMines(Cell cell) {
+    private int adjacentMinesCount(Cell cell){
         int count =0;
         for(int i = -1; i <= 1; i++){
             for(int j = -1; j <= 1; j++){
@@ -171,6 +223,5 @@ public class MainActivity extends AppCompatActivity {
         float density = Resources.getSystem().getDisplayMetrics().density;
         return Math.round(dp * density);
     }
-
 
 }
