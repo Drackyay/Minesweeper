@@ -1,1 +1,1 @@
-This is an simple android Minesweeper game
+This is a simple android Minesweeper game
